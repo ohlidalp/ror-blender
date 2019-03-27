@@ -4,7 +4,7 @@ bl_info = {
     "name": "RoR Importer",
     "author": "ulteq",
     "version": (0, 0, 1),
-    "blender": (2, 79, 0),
+    "blender": (2, 80, 0),
     "category": "RoR",
 }
 
@@ -17,11 +17,11 @@ from bpy_extras.io_utils import ImportHelper
 def register():
     bpy.app.debug = True
     bpy.utils.register_class(ror_import)
-    bpy.types.INFO_MT_file_import.append(menu_func)
+    bpy.types.TOPBAR_MT_file_import.append(menu_func)
     return
 
 def unregister():
-    bpy.types.INFO_MT_file_import.remove(menu_func)
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func)
     bpy.utils.unregister_class(ror_import)
     return
 
@@ -101,9 +101,9 @@ class ror_import(bpy.types.Operator, ImportHelper):
         mesh = bpy.data.meshes.new(self.filepath + "-mesh")
         obj  = bpy.data.objects.new(self.filepath + "-obj", mesh)
 
-        bpy.context.scene.objects.link(obj)
-        bpy.context.scene.objects.active = obj
-        obj.select = True
+        bpy.context.collection.objects.link(obj)
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
 
         bpy.types.Object.RoRTruckFile = bpy.props.StringProperty()
         bpy.context.active_object.RoRTruckFile = json.dumps(truckfile)

@@ -4,7 +4,7 @@ bl_info = {
     "name": "RoR Exporter",
     "author": "ulteq",
     "version": (0, 0, 1),
-    "blender": (2, 79, 0),
+    "blender": (2, 80, 0),
     "category": "RoR",
 }
 
@@ -17,11 +17,11 @@ from bpy_extras.io_utils import ExportHelper
 def register():
     bpy.app.debug = True
     bpy.utils.register_class(ror_export)
-    bpy.types.INFO_MT_file_export.append(menu_func)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func)
     return
 
 def unregister():
-    bpy.types.INFO_MT_file_export.remove(menu_func)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func)
     bpy.utils.unregister_class(ror_export)
     return
 
