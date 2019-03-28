@@ -1,12 +1,22 @@
-# <pep8-80 compliant>
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 3
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
 
-bl_info = {
-    "name": "RoR Importer",
-    "author": "ulteq",
-    "version": (0, 0, 1),
-    "blender": (2, 80, 0),
-    "category": "RoR",
-}
+# Author: Ulteq (https://github.com/ulteq)
 
 import bpy
 import json
@@ -14,21 +24,10 @@ import bmesh
 from bpy.props import StringProperty
 from bpy_extras.io_utils import ImportHelper
 
-def register():
-    bpy.app.debug = True
-    bpy.utils.register_class(ror_import)
-    bpy.types.TOPBAR_MT_file_import.append(menu_func)
-    return
+def import_menu_func(self, context):
+    self.layout.operator(import_op.bl_idname, text="Truck (.truck)")
 
-def unregister():
-    bpy.types.TOPBAR_MT_file_import.remove(menu_func)
-    bpy.utils.unregister_class(ror_import)
-    return
-
-def menu_func(self, context):
-    self.layout.operator(ror_import.bl_idname, text="Truck (.truck)")
-
-class ror_import(bpy.types.Operator, ImportHelper):
+class import_op(bpy.types.Operator, ImportHelper):
     bl_idname = "import_truck.truck"
     bl_label = "Import RoR Truck"
     filename_ext = ""
