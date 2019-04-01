@@ -136,14 +136,21 @@ class import_op(bpy.types.Operator, ImportHelper):
             except:
                 print ("Failed to add vertex:", n)
 
-        defaults_key = bm.edges.layers.string.new("defaults")
+        presets_key = bm.edges.layers.int.new("presets") # indices to 'RoR_RigDef.beam_presets'
         options_key = bm.edges.layers.string.new("options")
+        beam_presets = []
         for b in beams:
             try:
                 bm.edges.new((bm.verts[int(i)] for i in b[1:3]))
                 bm.edges.ensure_lookup_table()
-                bm.edges[-1][defaults_key] = b[0].encode()
+                # Process options
                 bm.edges[-1][options_key] = ' '.join(b[3:]).encode()
+                # Process presets
+                if len(beam_presets) == 0 or b[0] != beam_presets[-1]:
+                    if b[0] != "":
+                        beam_presets.append(b[0])
+                        print("----ROR import: adding beam preset: ", b[0])
+                bm.edges[-1][presets_key] = len(beam_presets) - 1 # -1 means 'no preset'
             except:
                 print ("Failed to add edge:", b)
 
@@ -158,5 +165,12 @@ class import_op(bpy.types.Operator, ImportHelper):
 
         bm.to_mesh(mesh)
         bm.free()
+
+        # Set up the `set_beam_defaults` panel
+        obj = bpy.context.active_object
+        obj.rig_def.sbd_active_item_index = 0
+        for line in beam_presets:
+            preset = obj.rig_def.beam_presets.add()
+            preset.args_line = line
 
         return {'FINISHED'}

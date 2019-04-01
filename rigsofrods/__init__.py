@@ -26,11 +26,15 @@ bl_info = {
 
 if "bpy" in locals():  # Handle reload of Blender addon
     import importlib
+    importlib.reload(truck_data)
     importlib.reload(truck_import)
     importlib.reload(truck_export)
+    importlib.reload(truck_ui_beam_presets)
 else:
+    from . import truck_data
     from . import truck_import
     from . import truck_export
+    from . import truck_ui_beam_presets
 
 import bpy
 import os
@@ -44,12 +48,24 @@ def register():
     bpy.utils.register_class(truck_export.export_op)
     bpy.types.TOPBAR_MT_file_import.append(truck_import.import_menu_func)
     bpy.types.TOPBAR_MT_file_export.append(truck_export.export_menu_func)
+    # set_beam_defaults
+    bpy.utils.register_class(truck_ui_beam_presets.ROR_PT_beam_presets)
+    bpy.utils.register_class(truck_ui_beam_presets.ROR_UL_beam_presets)
+    bpy.utils.register_class(truck_data.RoR_BeamDefaults)
+    bpy.utils.register_class(truck_ui_beam_presets.RoR_BeamPresetsOperator)
+    bpy.utils.register_class(truck_data.RoR_RigDef)
 
 def unregister():
     bpy.utils.unregister_class(truck_import.import_op)
     bpy.utils.unregister_class(truck_export.export_op)
     bpy.types.TOPBAR_MT_file_import.remove(truck_import.import_menu_func)
     bpy.types.TOPBAR_MT_file_export.remove(truck_export.export_menu_func)
+    # set_beam_defaults
+    bpy.utils.unregister_class(truck_ui_beam_presets.ROR_UL_beam_presets)
+    bpy.utils.unregister_class(truck_ui_beam_presets.ROR_PT_beam_presets)
+    bpy.utils.unregister_class(truck_data.RoR_BeamDefaults)
+    bpy.utils.unregister_class(truck_ui_beam_presets.RoR_BeamPresetsOperator)
+    bpy.utils.unregister_class(truck_data.RoR_RigDef)
 
 if __name__ == "__main__":
     register()

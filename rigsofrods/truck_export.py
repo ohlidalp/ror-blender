@@ -71,13 +71,13 @@ class export_op(bpy.types.Operator, ExportHelper):
                 nodes.append([format_string.format(v.index, v.co[1], v.co[2], v.co[0]), options, groups, defaults])
 
             format_string = '{:'+str(node_digits)+'d}, {:'+str(node_digits)+'d}'
-            defaults_key = bm.edges.layers.string.get("defaults")
+            presets_key = bm.edges.layers.int.get("presets")
             options_key = bm.edges.layers.string.get("options")
             bm.edges.ensure_lookup_table()
             for e, be in zip(obj.data.edges, bm.edges):
-                defaults = ''
-                if defaults_key:
-                    defaults = be[defaults_key].decode()
+                preset_idx = -1
+                if presets_key:
+                    preset_idx = be[presets_key]
                 options = ''
                 if options_key:
                     options = be[options_key].decode()
@@ -86,7 +86,7 @@ class export_op(bpy.types.Operator, ExportHelper):
                 ids = sorted([[g.group for g in obj.data.vertices[e.vertices[i]].groups] for i in [0, 1]])
                 vg1, vg2 = [[group_names[g] for g in ids[i]] for i in [0, 1]]
                 groups = vg1 if vg1 == vg2 else [', '.join(vg1)] + [">"] + [', '.join(vg2)]
-                beams.append([ids, groups, format_string.format(e.vertices[0], e.vertices[1]), options, defaults])
+                beams.append([ids, groups, format_string.format(e.vertices[0], e.vertices[1]), options, preset_idx])
 
             format_string = '{:'+str(node_digits)+'d}, {:'+str(node_digits)+'d}, {:'+str(node_digits)+'d}'
             options_key = bm.faces.layers.string.get("options")
@@ -105,6 +105,7 @@ class export_op(bpy.types.Operator, ExportHelper):
 
         truckfile = []
         indices = [0, 0, 0]
+        rig_def = bpy.context.active_object.rig_def
         try:
             truckfile = json.loads(bpy.context.active_object.RoRTruckFile)
             indices = json.loads(bpy.context.active_object.RoRInsertIndices)
@@ -134,11 +135,12 @@ class export_op(bpy.types.Operator, ExportHelper):
                 print (line, file=f)
 
             print("beams", file=f)
+            beam_preset_idx = -1
             edge_groups = []
             for b in sorted(beams):
-                if b[-1] and b[-1] != defaults:
-                    defaults = b[-1]
-                    print (defaults, file=f)
+                if b[-1] and b[-1] != beam_preset_idx:
+                    beam_preset_idx = b[-1]
+                    print (rig_def.beam_presets[beam_preset_idx].args_line, file=f)
                 if b[1] != edge_groups:
                     edge_groups = b[1]
                     print (";grp:", *edge_groups, file=f)
