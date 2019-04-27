@@ -59,8 +59,8 @@ class ROR_OT_beam_presets(bpy.types.Operator):
             if (self.action == 'DELETE'):
                 rig_def.beam_presets.remove(rig_def.active_beam_preset_index)
                 for be in bm.edges:
-                    if be[presets_key] >= rig_def.active_beam_preset_index:
-                        be[presets_key] = be[presets_key] - 1
+                    if be[presets_key] == rig_def.active_beam_preset_index:
+                        be[presets_key] = -1 # not assigned
             elif (self.action == 'SELECT' or self.action == 'DESELECT'):
                 bpy.ops.mesh.select_mode(type="EDGE") # Reference: https://docs.blender.org/api/blender2.8/bpy.ops.mesh.html?highlight=select_mode#bpy.ops.mesh.select_mode
                 for be in bm.edges:
@@ -73,7 +73,7 @@ class ROR_OT_beam_presets(bpy.types.Operator):
             elif self.action == 'REMOVE':
                 for be in bm.edges:
                     if be.select and be[presets_key] == rig_def.active_beam_preset_index:
-                        be[presets_key] = -1
+                        be[presets_key] = -1 # not assigned
             elif self.action == 'SELECT_UNASSIGNED':
                 for be in bm.edges:
                     if be[presets_key] == -1:
