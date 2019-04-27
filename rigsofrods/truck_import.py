@@ -21,21 +21,20 @@
 import bpy
 import json
 import bmesh
-from bpy.props import StringProperty
 from bpy_extras.io_utils import ImportHelper
 
 def import_menu_func(self, context):
-    self.layout.operator(import_op.bl_idname, text="Truck (.truck)")
+    self.layout.operator(ROR_OT_truck_import.bl_idname, text="Truck (.truck)")
 
-class import_op(bpy.types.Operator, ImportHelper):
+class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
     bl_idname = "import_truck.truck"
     bl_label = "Import RoR Truck"
     filename_ext = ""
-    filter_glob = StringProperty(
+    filter_glob: bpy.props.StringProperty(
             default="*.truck;*.trailer;*.load;*.car;*.boat;*.airplane;*.train;*.machine;*.fixed",
             options={'HIDDEN'},
             )
-    filepath = bpy.props.StringProperty(subtype="FILE_PATH")
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
 
     def execute(self, context):
         truckfile = []

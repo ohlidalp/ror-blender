@@ -35,11 +35,11 @@ class ROR_UL_beam_presets(bpy.types.UIList):
 
 
 # Reference: https://docs.blender.org/api/blender2.8/bpy.types.Operator.html
-class RoR_BeamPresetsOperator(bpy.types.Operator):
+class ROR_OT_beam_presets(bpy.types.Operator):
     bl_idname = "mesh.ror_beam_presets_op"
     bl_label = "Beam presets manipulation"
     
-    sbd_action = bpy.props.StringProperty() # {'SELECT', 'DESELECT', 'ASSIGN', 'REMOVE', 'CREATE', 'DELETE', 'SELECT_UNASSIGNED'} TODO: make enum
+    action = bpy.props.StringProperty() # {'SELECT', 'DESELECT', 'ASSIGN', 'REMOVE', 'CREATE', 'DELETE', 'SELECT_UNASSIGNED'} TODO: make enum
 
     @classmethod
     def poll(cls, context):
@@ -48,7 +48,7 @@ class RoR_BeamPresetsOperator(bpy.types.Operator):
 
     def execute(self, context):
         rig_def = context.object.rig_def
-        if self.sbd_action == 'CREATE':
+        if self.action == 'CREATE':
             preset = context.object.rig_def.beam_presets.add()
             preset.args_line = 'set_beam_defaults ' 
         else:
@@ -56,25 +56,25 @@ class RoR_BeamPresetsOperator(bpy.types.Operator):
             bm = bmesh.from_edit_mesh(mesh)
             bm.edges.ensure_lookup_table()
             presets_key = bm.edges.layers.int.get("presets")
-            if (self.sbd_action == 'DELETE'):
+            if (self.action == 'DELETE'):
                 rig_def.beam_presets.remove(rig_def.active_beam_preset_index)
                 for be in bm.edges:
                     if be[presets_key] >= rig_def.active_beam_preset_index:
                         be[presets_key] = be[presets_key] - 1
-            elif (self.sbd_action == 'SELECT' or self.sbd_action == 'DESELECT'):
+            elif (self.action == 'SELECT' or self.action == 'DESELECT'):
                 bpy.ops.mesh.select_mode(type="EDGE") # Reference: https://docs.blender.org/api/blender2.8/bpy.ops.mesh.html?highlight=select_mode#bpy.ops.mesh.select_mode
                 for be in bm.edges:
                     if be[presets_key] == rig_def.active_beam_preset_index:
-                        be.select_set(self.sbd_action == 'SELECT')
-            elif self.sbd_action == 'ASSIGN':
+                        be.select_set(self.action == 'SELECT')
+            elif self.action == 'ASSIGN':
                 for be in bm.edges:
                     if be.select:
                         be[presets_key] = rig_def.active_beam_preset_index
-            elif self.sbd_action == 'REMOVE':
+            elif self.action == 'REMOVE':
                 for be in bm.edges:
                     if be.select and be[presets_key] == rig_def.active_beam_preset_index:
                         be[presets_key] = -1
-            elif self.sbd_action == 'SELECT_UNASSIGNED':
+            elif self.action == 'SELECT_UNASSIGNED':
                 for be in bm.edges:
                     if be[presets_key] == -1:
                         be.select_set(True)
@@ -88,7 +88,6 @@ class RoR_BeamPresetsOperator(bpy.types.Operator):
 class ROR_PT_beam_presets(bpy.types.Panel):
     """ Add, assign on remove beam presets (directive `set_beam_defaults` in Truckfile) """
     bl_label = "Beam Defaults"
-    bl_idname = "ROR_PT_beam_presets" # Will be available as 'bpy.types.ROR_PT_beam_presets'
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "data"
@@ -107,26 +106,26 @@ class ROR_PT_beam_presets(bpy.types.Panel):
         row = layout.row()
         # HOWTO add UI button: https://docs.blender.org/api/blender2.8/bpy.types.UILayout.html#bpy.types.UILayout.operator
         op_props = row.operator("mesh.ror_beam_presets_op", text="Select")
-        op_props.sbd_action = 'SELECT'
+        op_props.action = 'SELECT'
 
         op_props = row.operator("mesh.ror_beam_presets_op", text="Deselect")
-        op_props.sbd_action = 'DESELECT'
+        op_props.action = 'DESELECT'
 
         row = layout.row()
         op_props = row.operator("mesh.ror_beam_presets_op", text="Assign")
-        op_props.sbd_action = 'ASSIGN'
+        op_props.action = 'ASSIGN'
         
         op_props = row.operator("mesh.ror_beam_presets_op", text="Remove")
-        op_props.sbd_action = 'REMOVE'
+        op_props.action = 'REMOVE'
         
         row = layout.row()
         op_props = row.operator("mesh.ror_beam_presets_op", text="Create")
-        op_props.sbd_action = 'CREATE'
+        op_props.action = 'CREATE'
         
         op_props = row.operator("mesh.ror_beam_presets_op", text="Delete")
-        op_props.sbd_action = 'DELETE'
+        op_props.action = 'DELETE'
 
         row = layout.row()
         op_props = row.operator("mesh.ror_beam_presets_op", text="Select unassigned")
-        op_props.sbd_action = 'SELECT_UNASSIGNED'
+        op_props.action = 'SELECT_UNASSIGNED'
 

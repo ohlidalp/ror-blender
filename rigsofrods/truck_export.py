@@ -21,21 +21,20 @@
 import bpy
 import json
 import bmesh
-from bpy.props import StringProperty
 from bpy_extras.io_utils import ExportHelper
 
 def export_menu_func(self, context):
-    self.layout.operator(export_op.bl_idname, text="Truck (.truck)")
+    self.layout.operator(ROR_OT_truck_export.bl_idname, text="Truck (.truck)")
 
-class export_op(bpy.types.Operator, ExportHelper):
+class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
     bl_idname = "export_truck.truck"
     bl_label = "Export RoR Truck"
     filename_ext = ""
-    filter_glob = StringProperty(
+    filter_glob: bpy.props.StringProperty(
             default="*.truck;*.trailer;*.load;*.car;*.boat;*.airplane;*.train;*.machine;*.fixed",
             options={'HIDDEN'},
             )
-    filepath = bpy.props.StringProperty(subtype="FILE_PATH")
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
 
     def execute(self, context):
         nodes = []
