@@ -54,20 +54,20 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
             node_digits = len(str(len(obj.data.vertices) - 1))
 
             format_string = '{:'+str(node_digits)+'d}, {: 8.3f}, {: 8.3f}, {: 8.3f}'
-            defaults_key = bm.verts.layers.string.get("defaults")
+            presets_key = bm.verts.layers.int.get("presets")
             options_key = bm.verts.layers.string.get("options")
             bm.verts.ensure_lookup_table()
             for v, bv in zip(obj.data.vertices, bm.verts):
-                defaults = ''
-                if defaults_key:
-                    defaults = bv[defaults_key].decode()
+                preset_idx = -1
+                if presets_key:
+                    preset_idx = bv[presets_key];
                 options = ''
                 if options_key:
                     options = bv[options_key].decode()
                 if not options:
                     options = 'n'
                 groups = [group_names[g.group] for g in v.groups]
-                nodes.append([format_string.format(v.index, v.co[1], v.co[2], v.co[0]), options, groups, defaults])
+                nodes.append([format_string.format(v.index, v.co[1], v.co[2], v.co[0]), options, groups, preset_idx])
 
             format_string = '{:'+str(node_digits)+'d}, {:'+str(node_digits)+'d}'
             presets_key = bm.edges.layers.int.get("presets")
@@ -116,12 +116,13 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
                 print (line, file=f)
 
             print("nodes", file=f)
-            defaults = ''
+            node_preset = -1 # index, -1 means 'not set'
             vertex_groups = []
-            for n in sorted(nodes):
-                if n[-1] and n[-1] != defaults:
-                    defaults = n[-1]
-                    print (defaults, file=f)
+            for n in sorted(nodes):                
+                if n[-1] and n[-1] != node_preset:
+                    print("RoR export: current node preset={}".format(n[-1]))    # console dbg
+                    node_preset = n[-1]
+                    print (rig_def.node_presets[node_preset].args_line, file=f)
                 if n[-2] != vertex_groups:
                     vertex_groups = n[-2]
                     print (";grp:", ', '.join(vertex_groups), file=f)

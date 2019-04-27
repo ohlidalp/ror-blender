@@ -118,15 +118,23 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
         bm   = bmesh.new()
         dl   = bm.verts.layers.deform.verify()
 
-        defaults_key = bm.verts.layers.string.new("defaults")
+        presets_key = bm.verts.layers.int.new("presets") # indices to 'RoR_RigDef.node_presets'
         options_key = bm.verts.layers.string.new("options")
+        node_presets = []
         for n in nodes:
             try:
                 v = bm.verts.new((float(n[4]), float(n[2]), float(n[3])))
                 bm.verts.ensure_lookup_table()
                 bm.verts.index_update()
-                bm.verts[-1][defaults_key] = n[0].encode()
+                # options
                 bm.verts[-1][options_key] = ' '.join(n[5:]).encode()
+                # presets
+                if len(node_presets) == 0 or n[0] != node_presets[-1]:
+                    if n[0] != "":
+                        node_presets.append(n[0])
+                        print("----ROR import: adding node preset: ", n[0])
+                bm.verts[-1][presets_key] = len(node_presets) - 1 # -1 means 'no preset'
+                # vertex groups
                 for g in n[1]:
                     vg = obj.vertex_groups.get(g)
                     if not vg:
@@ -165,11 +173,16 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
         bm.to_mesh(mesh)
         bm.free()
 
-        # Set up the `set_beam_defaults` panel
+        # Beam presets
         obj = bpy.context.active_object
-        obj.rig_def.sbd_active_item_index = 0
         for line in beam_presets:
             preset = obj.rig_def.beam_presets.add()
             preset.args_line = line
+
+        # Node presets
+        for line in node_presets:
+            preset = obj.rig_def.node_presets.add()
+            preset.args_line = line
+
 
         return {'FINISHED'}

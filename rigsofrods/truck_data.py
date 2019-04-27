@@ -39,8 +39,10 @@ class RoR_RigDef(bpy.types.PropertyGroup):
         cls.beam_presets = bpy.props.CollectionProperty(type=RoR_BeamDefaults, name="Beam presets", description="Truckfile: `set_beam_defaults`")
         cls.active_beam_preset_index = bpy.props.IntProperty()
 
+        cls.node_presets = bpy.props.CollectionProperty(type=RoR_NodeDefaults, name="Node presets", description="Truckfile: `set_node_defaults`")
+        cls.active_node_preset_index = bpy.props.IntProperty()
+
         bpy.types.Object.rig_def = bpy.props.PointerProperty(type=cls, name="RoR Rig definition", description="")
-        print('Done reg. RoR_RigDef')
 
     @classmethod
     def unregister(cls):
@@ -55,3 +57,13 @@ class RoR_BeamDefaults(bpy.types.PropertyGroup):
         print('registering RoR_BeamDefaults')
         cls.args_line = bpy.props.StringProperty(name="Arguments", description="Text line with arguments")
         print('done registering RoR_BeamDefaults')
+
+
+class RoR_NodeDefaults(bpy.types.PropertyGroup):
+    """ A preset for physical parameters of softbody vertex (aka 'node' in RoR jargon) """
+
+    @classmethod
+    def register(cls):
+        print('registering RoR_NodeDefaults')
+        cls.args_line = bpy.props.StringProperty(name="Arguments", description="Text line with arguments")
+        print('done registering RoR_NodeDefaults')
