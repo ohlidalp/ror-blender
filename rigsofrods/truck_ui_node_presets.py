@@ -88,10 +88,10 @@ class ROR_OT_node_presets(bpy.types.Operator):
 
 class ROR_PT_node_presets(bpy.types.Panel):
     """ Add, assign on remove node presets (directive `set_node_defaults` in Truckfile) """
-    bl_label = "Node Defaults"
+    bl_label = "Node Presets"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
-    bl_context = "data"
+    bl_context = "physics"
 
     def draw(self, context):
         layout = self.layout

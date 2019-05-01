@@ -88,10 +88,10 @@ class ROR_OT_beam_presets(bpy.types.Operator):
 
 class ROR_PT_beam_presets(bpy.types.Panel):
     """ Add, assign on remove beam presets (directive `set_beam_defaults` in Truckfile) """
-    bl_label = "Beam Defaults"
+    bl_label = "Beam Presets"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
-    bl_context = "data"
+    bl_context = "physics"
 
     def draw(self, context):
         layout = self.layout
