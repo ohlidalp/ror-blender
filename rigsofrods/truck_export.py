@@ -116,13 +116,15 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
                 print (line, file=f)
 
             print("nodes", file=f)
-            node_preset = -1 # index, -1 means 'not set'
+            node_preset_idx = -1 # -1 means 'not set'
             vertex_groups = []
             for n in sorted(nodes):                
-                if n[-1] and n[-1] != node_preset:
-                    print("RoR export: current node preset={}".format(n[-1]))    # console dbg
-                    node_preset = n[-1]
-                    print (rig_def.node_presets[node_preset].args_line, file=f)
+                if n[-1] != node_preset_idx:
+                    node_preset_idx = n[-1]
+                    if node_preset_idx == -1:
+                        print('set_node_defaults -1, -1, -1, -1', file=f) # reset all to builtin values
+                    else:
+                        print (rig_def.node_presets[node_preset_idx].args_line, file=f)
                 if n[-2] != vertex_groups:
                     vertex_groups = n[-2]
                     print (";grp:", ', '.join(vertex_groups), file=f)
@@ -138,9 +140,12 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
             beam_preset_idx = -1
             edge_groups = []
             for b in sorted(beams):
-                if b[-1] and b[-1] != beam_preset_idx:
+                if b[-1] != beam_preset_idx:
                     beam_preset_idx = b[-1]
-                    print (rig_def.beam_presets[beam_preset_idx].args_line, file=f)
+                    if beam_preset_idx == -1:
+                        print('set_beam_defaults -1, -1, -1, -1', file=f) # reset all to builtin values
+                    else:
+                        print (rig_def.beam_presets[beam_preset_idx].args_line, file=f)
                 if b[1] != edge_groups:
                     edge_groups = b[1]
                     print (";grp:", *edge_groups, file=f)
