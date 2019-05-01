@@ -75,6 +75,7 @@ class ROR_OT_beam_presets(bpy.types.Operator):
                     if be.select and be[presets_key] == rig_def.active_beam_preset_index:
                         be[presets_key] = -1 # not assigned
             elif self.action == 'SELECT_UNASSIGNED':
+                bpy.ops.mesh.select_mode(type="EDGE")
                 for be in bm.edges:
                     if be[presets_key] == -1:
                         be.select_set(True)

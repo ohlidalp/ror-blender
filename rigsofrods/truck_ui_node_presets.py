@@ -75,6 +75,7 @@ class ROR_OT_node_presets(bpy.types.Operator):
                     if bv.select and bv[presets_key] == rig_def.active_node_preset_index:
                         bv[presets_key] = -1 # not assigned
             elif self.action == 'SELECT_UNASSIGNED':
+                bpy.ops.mesh.select_mode(type="VERT")
                 for bv in bm.verts:
                     if bv[presets_key] == -1:
                         bv.select_set(True)
