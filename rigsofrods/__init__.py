@@ -19,7 +19,7 @@
 
 bl_info = {
     "name": "Rigs of Rods Tools",
-    "author": "Ulteq, only_a_ptr",
+    "author": "Ulteq, Petr Ohlidal",
     "version": (0, 0, 1),
     "blender": (2, 80, 0),
     "category": "RoR",
@@ -58,9 +58,9 @@ classes = (
     truck_ui_nodes.ROR_OT_node_options, # Operator    
     truck_ui_nodes.ROR_PT_node_options, # UI panel
     # RigDef
-    truck_data.RoR_BeamDefaults,
-    truck_data.RoR_NodeDefaults,
-    truck_data.RoR_RigDef,
+    truck_data.RoR_BeamPreset,
+    truck_data.RoR_NodePreset,
+    truck_data.RoR_Truck,
 )
 reg_classes, unreg_classes = bpy.utils.register_classes_factory(classes)
 

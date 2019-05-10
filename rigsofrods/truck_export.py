@@ -104,7 +104,7 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
 
         truckfile = []
         indices = [0, 0, 0]
-        rig_def = bpy.context.active_object.rig_def
+        ror_truck = bpy.context.active_object.ror_truck
         try:
             truckfile = json.loads(bpy.context.active_object.RoRTruckFile)
             indices = json.loads(bpy.context.active_object.RoRInsertIndices)
@@ -124,7 +124,7 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
                     if node_preset_idx == -1:
                         print('set_node_defaults -1, -1, -1, -1', file=f) # reset all to builtin values
                     else:
-                        print (rig_def.node_presets[node_preset_idx].args_line, file=f)
+                        print (ror_truck.node_presets[node_preset_idx].args_line, file=f)
                 if n[-2] != vertex_groups:
                     vertex_groups = n[-2]
                     print (";grp:", ', '.join(vertex_groups), file=f)
@@ -145,7 +145,7 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
                     if beam_preset_idx == -1:
                         print('set_beam_defaults -1, -1, -1, -1', file=f) # reset all to builtin values
                     else:
-                        print (rig_def.beam_presets[beam_preset_idx].args_line, file=f)
+                        print (ror_truck.beam_presets[beam_preset_idx].args_line, file=f)
                 if b[1] != edge_groups:
                     edge_groups = b[1]
                     print (";grp:", *edge_groups, file=f)

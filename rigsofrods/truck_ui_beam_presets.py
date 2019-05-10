@@ -44,12 +44,12 @@ class ROR_OT_beam_presets(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         active_object = context.active_object
-        return active_object and active_object.type == 'MESH' and active_object.mode == 'EDIT' and active_object.rig_def
+        return active_object and active_object.type == 'MESH' and active_object.mode == 'EDIT' and active_object.ror_truck
 
     def execute(self, context):
-        rig_def = context.object.rig_def
+        ror_truck = context.object.ror_truck
         if self.action == 'CREATE':
-            preset = context.object.rig_def.beam_presets.add()
+            preset = context.object.ror_truck.beam_presets.add()
             preset.args_line = 'set_beam_defaults ' 
         else:
             mesh = context.object.data
@@ -57,22 +57,22 @@ class ROR_OT_beam_presets(bpy.types.Operator):
             bm.edges.ensure_lookup_table()
             presets_key = bm.edges.layers.int.get("presets")
             if (self.action == 'DELETE'):
-                rig_def.beam_presets.remove(rig_def.active_beam_preset_index)
+                ror_truck.beam_presets.remove(ror_truck.active_beam_preset_index)
                 for be in bm.edges:
-                    if be[presets_key] == rig_def.active_beam_preset_index:
+                    if be[presets_key] == ror_truck.active_beam_preset_index:
                         be[presets_key] = -1 # not assigned
             elif (self.action == 'SELECT' or self.action == 'DESELECT'):
                 bpy.ops.mesh.select_mode(type="EDGE") # Reference: https://docs.blender.org/api/blender2.8/bpy.ops.mesh.html?highlight=select_mode#bpy.ops.mesh.select_mode
                 for be in bm.edges:
-                    if be[presets_key] == rig_def.active_beam_preset_index:
+                    if be[presets_key] == ror_truck.active_beam_preset_index:
                         be.select_set(self.action == 'SELECT')
             elif self.action == 'ASSIGN':
                 for be in bm.edges:
                     if be.select:
-                        be[presets_key] = rig_def.active_beam_preset_index
+                        be[presets_key] = ror_truck.active_beam_preset_index
             elif self.action == 'REMOVE':
                 for be in bm.edges:
-                    if be.select and be[presets_key] == rig_def.active_beam_preset_index:
+                    if be.select and be[presets_key] == ror_truck.active_beam_preset_index:
                         be[presets_key] = -1 # not assigned
             elif self.action == 'SELECT_UNASSIGNED':
                 bpy.ops.mesh.select_mode(type="EDGE")
@@ -100,8 +100,8 @@ class ROR_PT_beam_presets(bpy.types.Panel):
 
         row = layout.row()
         row.template_list("ROR_UL_beam_presets", "ror_beam_presets",
-            obj.rig_def, "beam_presets",              # context and property
-            obj.rig_def, "active_beam_preset_index",  # context and property
+            obj.ror_truck, "beam_presets",              # context and property
+            obj.ror_truck, "active_beam_preset_index",  # context and property
             )
 
         row = layout.row()

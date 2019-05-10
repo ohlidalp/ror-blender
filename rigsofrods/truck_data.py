@@ -19,53 +19,45 @@
 import bpy
 
 """
-    A representation of Rigs of Rods softbody physics actor (aka 'truck')
-    Class names are chosen to be consistent with RoR source.
-    
-    PRESETS:
+    WHAT ARE PRESETS:
     Truckfile format uses directives 'set_node_defaults' and 'set_beam_defaults' to set parameters for following node/beam lines.
     This addon refers to the data as 'presets' because they can be (re)assigned and modified freely using UI.
-    However, classes are named '*Defaults' for consistency with RoR sources.
 
     Author: Petr Ohlidal 2019
 """
 
 
-class RoR_RigDef(bpy.types.PropertyGroup):
-    """ A RoR softbody physics actor - can be anything from a soda can to a space shuttle """ 
+class RoR_Truck(bpy.types.PropertyGroup):
+    """ A RoR softbody physics object, traditionally called 'truck' """ 
 
     @classmethod
     def register(cls):
-        cls.beam_presets = bpy.props.CollectionProperty(type=RoR_BeamDefaults, name="Beam presets", description="Truckfile: `set_beam_defaults`")
+        cls.beam_presets = bpy.props.CollectionProperty(type=RoR_BeamPreset, name="Beam presets", description="Truckfile: `set_beam_defaults`")
         cls.active_beam_preset_index = bpy.props.IntProperty()
 
-        cls.node_presets = bpy.props.CollectionProperty(type=RoR_NodeDefaults, name="Node presets", description="Truckfile: `set_node_defaults`")
+        cls.node_presets = bpy.props.CollectionProperty(type=RoR_NodePreset, name="Node presets", description="Truckfile: `set_node_defaults`")
         cls.active_node_preset_index = bpy.props.IntProperty()
         
         cls.active_node_options = bpy.props.StringProperty(description='Working copy of node options')
 
-        bpy.types.Object.rig_def = bpy.props.PointerProperty(type=cls, name="RoR Rig definition", description="")
+        bpy.types.Object.ror_truck = bpy.props.PointerProperty(type=cls, name='Truck', description='Truck (Rigs of Rods)')
 
     @classmethod
     def unregister(cls):
         del bpy.types.Object.rig_def
 
 
-class RoR_BeamDefaults(bpy.types.PropertyGroup):
+class RoR_BeamPreset(bpy.types.PropertyGroup):
     """ A preset for physical parameters of softbody edge (aka 'beam' in RoR jargon) """
 
     @classmethod
     def register(cls):
-        print('registering RoR_BeamDefaults')
         cls.args_line = bpy.props.StringProperty(name="Arguments", description="Text line with arguments")
-        print('done registering RoR_BeamDefaults')
 
 
-class RoR_NodeDefaults(bpy.types.PropertyGroup):
+class RoR_NodePreset(bpy.types.PropertyGroup):
     """ A preset for physical parameters of softbody vertex (aka 'node' in RoR jargon) """
 
     @classmethod
     def register(cls):
-        print('registering RoR_NodeDefaults')
         cls.args_line = bpy.props.StringProperty(name="Arguments", description="Text line with arguments")
-        print('done registering RoR_NodeDefaults')

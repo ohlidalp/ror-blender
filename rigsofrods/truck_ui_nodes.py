@@ -54,7 +54,7 @@ class ROR_OT_node_options(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         ob = context.active_object
-        return ob and ob.type == 'MESH' and ob.mode == 'EDIT' and ob.rig_def
+        return ob and ob.type == 'MESH' and ob.mode == 'EDIT' and ob.ror_truck
         
     def execute(self, context):
         ob = bpy.context.active_object  
@@ -63,7 +63,7 @@ class ROR_OT_node_options(bpy.types.Operator):
         bm.verts.ensure_lookup_table()
         options_key = bm.verts.layers.string.get("options")
         if self.action == 'LOAD':
-            ob.rig_def.active_node_options = ''
+            ob.ror_truck.active_node_options = ''
             num_selected = 0
             result = ''
             for v, bv in zip(ob.data.vertices, bm.verts):              
@@ -74,12 +74,12 @@ class ROR_OT_node_options(bpy.types.Operator):
                         result = '<different values>'
                     else:
                         result = val
-            ob.rig_def.active_node_options = result
+            ob.ror_truck.active_node_options = result
                                     
         elif self.action == 'APPLY':
             for v, bv in zip(ob.data.vertices, bm.verts):
                 if v.select:
-                    bv[options_key] = ob.rig_def.active_node_options.encode()
+                    bv[options_key] = ob.ror_truck.active_node_options.encode()
                                         
         return {'FINISHED'}   
                       
@@ -99,7 +99,7 @@ class ROR_PT_node_options(bpy.types.Panel):
         row = layout.row() 
         
         # NOTE: you can't add operator properties to a panel (https://blender.stackexchange.com/a/17755)
-        row.prop(ob.rig_def, "active_node_options", text='') # object (aka 'data') and property name
+        row.prop(ob.ror_truck, "active_node_options", text='') # object (aka 'data') and property name
 
         row = layout.row()
         # HOWTO add UI button: https://docs.blender.org/api/blender2.8/bpy.types.UILayout.html#bpy.types.UILayout.operator

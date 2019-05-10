@@ -176,12 +176,12 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
         # Beam presets
         obj = bpy.context.active_object
         for line in beam_presets:
-            preset = obj.rig_def.beam_presets.add()
+            preset = obj.ror_truck.beam_presets.add()
             preset.args_line = line
 
         # Node presets
         for line in node_presets:
-            preset = obj.rig_def.node_presets.add()
+            preset = obj.ror_truck.node_presets.add()
             preset.args_line = line
 
 

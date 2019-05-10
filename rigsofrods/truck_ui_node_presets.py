@@ -47,9 +47,9 @@ class ROR_OT_node_presets(bpy.types.Operator):
         return active_object and active_object.type == 'MESH' and active_object.mode == 'EDIT' and active_object.rig_def
 
     def execute(self, context):
-        rig_def = context.object.rig_def
+        rig_def = context.object.ror_truck
         if self.action == 'CREATE':
-            preset = context.object.rig_def.node_presets.add()
+            preset = context.object.ror_truck.node_presets.add()
             preset.args_line = 'set_node_defaults ' 
         else:
             mesh = context.object.data
@@ -57,22 +57,22 @@ class ROR_OT_node_presets(bpy.types.Operator):
             bm.edges.ensure_lookup_table()
             presets_key = bm.verts.layers.int.get("presets")
             if (self.action == 'DELETE'):
-                rig_def.node_presets.remove(rig_def.active_node_preset_index)
+                ror_truck.node_presets.remove(ror_truck.active_node_preset_index)
                 for bv in bm.verts:
-                    if bv[presets_key] == rig_def.active_node_preset_index:
+                    if bv[presets_key] == ror_truck.active_node_preset_index:
                         bv[presets_key] = -1 # not assigned
             elif (self.action == 'SELECT' or self.action == 'DESELECT'):
                 bpy.ops.mesh.select_mode(type="VERT") # Reference: https://docs.blender.org/api/blender2.8/bpy.ops.mesh.html?highlight=select_mode#bpy.ops.mesh.select_mode
                 for bv in bm.verts:
-                    if bv[presets_key] == rig_def.active_node_preset_index:
+                    if bv[presets_key] == ror_truck.active_node_preset_index:
                         bv.select_set(self.action == 'SELECT')
             elif self.action == 'ASSIGN':
                 for bv in bm.verts:
                     if bv.select:
-                        bv[presets_key] = rig_def.active_node_preset_index
+                        bv[presets_key] = ror_truck.active_node_preset_index
             elif self.action == 'REMOVE':
                 for bv in bm.verts:
-                    if bv.select and bv[presets_key] == rig_def.active_node_preset_index:
+                    if bv.select and bv[presets_key] == ror_truck.active_node_preset_index:
                         bv[presets_key] = -1 # not assigned
             elif self.action == 'SELECT_UNASSIGNED':
                 bpy.ops.mesh.select_mode(type="VERT")
@@ -100,8 +100,8 @@ class ROR_PT_node_presets(bpy.types.Panel):
 
         row = layout.row()
         row.template_list("ROR_UL_node_presets", "ror_node_presets",
-            obj.rig_def, "node_presets",              # context and property
-            obj.rig_def, "active_node_preset_index",  # context and property
+            obj.ror_truck, "node_presets",              # context and property
+            obj.ror_truck, "active_node_preset_index",  # context and property
             )
 
         row = layout.row()
