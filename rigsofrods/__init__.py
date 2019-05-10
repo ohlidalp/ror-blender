@@ -57,9 +57,10 @@ classes = (
     truck_ui_node_presets.ROR_OT_node_presets, # Operator
     truck_ui_nodes.ROR_OT_node_options, # Operator    
     truck_ui_nodes.ROR_PT_node_options, # UI panel
-    # RigDef
+    # Truckfile
     truck_data.RoR_BeamPreset,
     truck_data.RoR_NodePreset,
+    truck_data.RoR_TruckLine,
     truck_data.RoR_Truck,
 )
 reg_classes, unreg_classes = bpy.utils.register_classes_factory(classes)

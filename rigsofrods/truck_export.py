@@ -19,7 +19,6 @@
 # Author: Ulteq (https://github.com/ulteq)
 
 import bpy
-import json
 import bmesh
 from bpy_extras.io_utils import ExportHelper
 
@@ -104,33 +103,31 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
 
         truckfile = []
         indices = [0, 0, 0]
-        ror_truck = bpy.context.active_object.ror_truck
-        try:
-            truckfile = json.loads(bpy.context.active_object.RoRTruckFile)
-            indices = json.loads(bpy.context.active_object.RoRInsertIndices)
-        except:
-            pass
+        truck = bpy.context.active_object.ror_truck
+        truckfile = []
+        for entry in truck.truckfile_lines:
+            truckfile.append(entry.line)
 
         with open(self.filepath, 'w') as f:
-            for line in truckfile[:indices[0]]:
+            for line in truckfile[:truck.truckfile_nodes_pos]:
                 print (line, file=f)
 
             print("nodes", file=f)
             node_preset_idx = -1 # -1 means 'not set'
             vertex_groups = []
-            for n in sorted(nodes):                
+            for n in sorted(nodes):
                 if n[-1] != node_preset_idx:
                     node_preset_idx = n[-1]
                     if node_preset_idx == -1:
                         print('set_node_defaults -1, -1, -1, -1', file=f) # reset all to builtin values
                     else:
-                        print (ror_truck.node_presets[node_preset_idx].args_line, file=f)
+                        print (truck.node_presets[node_preset_idx].args_line, file=f)
                 if n[-2] != vertex_groups:
                     vertex_groups = n[-2]
                     print (";grp:", ', '.join(vertex_groups), file=f)
                 print (*n[:-2], sep=', ', file=f)
 
-            lines = truckfile[indices[0]:indices[1]]
+            lines = truckfile[truck.truckfile_nodes_pos:truck.truckfile_beams_pos]
             if not lines:
                 lines = ['']
             for line in lines:
@@ -145,13 +142,13 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
                     if beam_preset_idx == -1:
                         print('set_beam_defaults -1, -1, -1, -1', file=f) # reset all to builtin values
                     else:
-                        print (ror_truck.beam_presets[beam_preset_idx].args_line, file=f)
+                        print (truck.beam_presets[beam_preset_idx].args_line, file=f)
                 if b[1] != edge_groups:
                     edge_groups = b[1]
                     print (";grp:", *edge_groups, file=f)
                 print (*b[2:-1], sep=', ', file=f)
 
-            lines = truckfile[indices[1]:indices[2]]
+            lines = truckfile[truck.truckfile_beams_pos:truck.truckfile_cab_pos]
             if not lines:
                 lines = ['']
             for line in lines:
@@ -162,7 +159,7 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
                 for c in cabs:
                     print (*c, sep=', ', file=f)
 
-            for line in truckfile[indices[2]:]:
+            for line in truckfile[truck.truckfile_cab_pos:]:
                 print (line, file=f)
 
         return {'FINISHED'}

@@ -44,7 +44,7 @@ class ROR_OT_node_presets(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         active_object = context.active_object
-        return active_object and active_object.type == 'MESH' and active_object.mode == 'EDIT' and active_object.rig_def
+        return active_object and active_object.type == 'MESH' and active_object.mode == 'EDIT' and active_object.ror_truck
 
     def execute(self, context):
         rig_def = context.object.ror_truck

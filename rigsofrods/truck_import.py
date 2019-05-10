@@ -19,7 +19,6 @@
 # Author: Ulteq (https://github.com/ulteq)
 
 import bpy
-import json
 import bmesh
 from bpy_extras.io_utils import ImportHelper
 
@@ -48,12 +47,16 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
         with open(self.filepath, 'r') as f:
             node_defaults = ''
             beam_defaults = ''
-            mode = 'ignore'
+            mode = 'name' # 'name', 'nodes', 'beams', 'cab', 'ignore'
             groups = []
+            truck_name = ''
             for line in f:
                 line = line.strip()
                 if not line or line[0] == ';':
-                    if mode == 'nodes' and line[:5] == ';grp:':
+                    if mode == 'name':
+                        truck_name = line;
+                        mode = 'ignore'
+                    elif mode == 'nodes' and line[:5] == ';grp:':
                         groups = [g.strip() for g in line[5:].split(',')]
                     elif mode == 'beams' and line[:5] == ';grp:':
                         pass
@@ -96,29 +99,28 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
                 elif mode == 'cab':
                     cabs.append(args)
 
-        mesh = bpy.data.meshes.new(self.filepath + "-mesh")
-        obj  = bpy.data.objects.new(self.filepath + "-obj", mesh)
+        mesh = bpy.data.meshes.new(truck_name)
+        obj  = bpy.data.objects.new(truck_name, mesh)
 
         bpy.context.collection.objects.link(obj)
         bpy.context.view_layer.objects.active = obj
         obj.select_set(True)
 
-        bpy.types.Object.RoRTruckFile = bpy.props.StringProperty()
-        bpy.context.active_object.RoRTruckFile = json.dumps(truckfile)
-
         if (beam_idx < node_idx):
             beam_idx = len(truckfile)
         if (cab_idx < beam_idx):
             cab_idx = len(truckfile)
-        indices = [node_idx, beam_idx, cab_idx]
-        bpy.types.Object.RoRInsertIndices = bpy.props.StringProperty()
-        bpy.context.active_object.RoRInsertIndices = json.dumps(indices)
+            
+        obj.ror_truck.truckfile_path = self.filepath        
+        obj.ror_truck.truckfile_nodes_pos = node_idx
+        obj.ror_truck.truckfile_beams_pos = beam_idx
+        obj.ror_truck.truckfile_cab_pos = cab_idx    
 
         mesh = bpy.context.object.data
         bm   = bmesh.new()
         dl   = bm.verts.layers.deform.verify()
 
-        presets_key = bm.verts.layers.int.new("presets") # indices to 'RoR_RigDef.node_presets'
+        presets_key = bm.verts.layers.int.new("presets") # indices to 'RoR_Truck.node_presets'
         options_key = bm.verts.layers.string.new("options")
         node_presets = []
         for n in nodes:
@@ -143,7 +145,7 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
             except:
                 print ("Failed to add vertex:", n)
 
-        presets_key = bm.edges.layers.int.new("presets") # indices to 'RoR_RigDef.beam_presets'
+        presets_key = bm.edges.layers.int.new("presets") # indices to 'RoR_Truck.beam_presets'
         options_key = bm.edges.layers.string.new("options")
         beam_presets = []
         for b in beams:
@@ -183,6 +185,10 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
         for line in node_presets:
             preset = obj.ror_truck.node_presets.add()
             preset.args_line = line
-
+            
+        # Lines
+        for line in truckfile:
+            tl = obj.ror_truck.truckfile_lines.add()
+            tl.line = line 
 
         return {'FINISHED'}

@@ -39,6 +39,12 @@ class RoR_Truck(bpy.types.PropertyGroup):
         cls.active_node_preset_index = bpy.props.IntProperty()
         
         cls.active_node_options = bpy.props.StringProperty(description='Working copy of node options')
+        
+        cls.truckfile_path = bpy.props.StringProperty(description='Truckfile path')
+        cls.truckfile_lines = bpy.props.CollectionProperty(type=RoR_TruckLine, description='Truckfile lines')
+        cls.truckfile_nodes_pos = bpy.props.IntProperty(description='Truckfile line index of `nodes`')
+        cls.truckfile_beams_pos = bpy.props.IntProperty(description='Truckfile line index of `beams`')
+        cls.truckfile_cab_pos = bpy.props.IntProperty(description='Truckfile line index of `cab`')
 
         bpy.types.Object.ror_truck = bpy.props.PointerProperty(type=cls, name='Truck', description='Truck (Rigs of Rods)')
 
@@ -61,3 +67,10 @@ class RoR_NodePreset(bpy.types.PropertyGroup):
     @classmethod
     def register(cls):
         cls.args_line = bpy.props.StringProperty(name="Arguments", description="Text line with arguments")
+        
+class RoR_TruckLine(bpy.types.PropertyGroup):
+    """ Just a string wrapper """
+
+    @classmethod
+    def register(cls):
+        cls.line = bpy.props.StringProperty(name="Line", description="Truckfile line")
