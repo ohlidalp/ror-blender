@@ -32,12 +32,14 @@ if "bpy" in locals():  # Handle reload of Blender addon
     importlib.reload(truck_export)
     importlib.reload(truck_ui_beam_presets)
     importlib.reload(truck_ui_node_presets)
+    importlib.reload(truck_ui_nodes)    
 else:
     from . import truck_data
     from . import truck_import
     from . import truck_export
     from . import truck_ui_beam_presets
     from . import truck_ui_node_presets
+    from . import truck_ui_nodes    
 
 import bpy
 
@@ -53,6 +55,8 @@ classes = (
     truck_ui_node_presets.ROR_PT_node_presets, # UI panel
     truck_ui_node_presets.ROR_UL_node_presets, # UI list
     truck_ui_node_presets.ROR_OT_node_presets, # Operator
+    truck_ui_nodes.ROR_OT_node_options, # Operator    
+    truck_ui_nodes.ROR_PT_node_options, # UI panel
     # RigDef
     truck_data.RoR_BeamDefaults,
     truck_data.RoR_NodeDefaults,

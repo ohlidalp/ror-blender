@@ -41,6 +41,8 @@ class RoR_RigDef(bpy.types.PropertyGroup):
 
         cls.node_presets = bpy.props.CollectionProperty(type=RoR_NodeDefaults, name="Node presets", description="Truckfile: `set_node_defaults`")
         cls.active_node_preset_index = bpy.props.IntProperty()
+        
+        cls.active_node_options = bpy.props.StringProperty(description='Working copy of node options')
 
         bpy.types.Object.rig_def = bpy.props.PointerProperty(type=cls, name="RoR Rig definition", description="")
 
