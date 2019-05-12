@@ -53,15 +53,17 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
             for line in f:
                 line = line.strip()
                 if not line or line[0] == ';':
-                    if mode == 'name':
-                        truck_name = line;
-                        mode = 'ignore'
-                    elif mode == 'nodes' and line[:5] == ';grp:':
+                    if mode == 'nodes' and line[:5] == ';grp:':
                         groups = [g.strip() for g in line[5:].split(',')]
                     elif mode == 'beams' and line[:5] == ';grp:':
                         pass
                     else:
                         truckfile.append(line)
+                    continue
+                
+                if mode == 'name':
+                    truck_name = line;
+                    mode = 'ignore'
                     continue
 
                 args = line.replace(',', ' ').split()
