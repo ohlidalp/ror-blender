@@ -37,6 +37,7 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
         truckfile = []
+        name_idx = 0
         node_idx = 0
         nodes = []
         beam_idx = 0
@@ -60,10 +61,11 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
                     else:
                         truckfile.append(line)
                     continue
-                
+
                 if mode == 'name':
                     truck_name = line;
                     mode = 'ignore'
+                    name_idx = len(truckfile)
                     continue
 
                 args = line.replace(',', ' ').split()
@@ -101,7 +103,7 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
                 elif mode == 'cab':
                     cabs.append(args)
 
-        mesh = bpy.data.meshes.new(truck_name)
+        mesh = bpy.data.meshes.new("softbody")
         obj  = bpy.data.objects.new(truck_name, mesh)
 
         bpy.context.collection.objects.link(obj)
@@ -112,11 +114,12 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
             beam_idx = len(truckfile)
         if (cab_idx < beam_idx):
             cab_idx = len(truckfile)
-            
-        obj.ror_truck.truckfile_path = self.filepath        
+
+        obj.ror_truck.truckfile_path = self.filepath
         obj.ror_truck.truckfile_nodes_pos = node_idx
         obj.ror_truck.truckfile_beams_pos = beam_idx
-        obj.ror_truck.truckfile_cab_pos = cab_idx    
+        obj.ror_truck.truckfile_cab_pos = cab_idx
+        obj.ror_truck.truckfile_name_pos = name_idx
 
         mesh = bpy.context.object.data
         bm   = bmesh.new()
@@ -187,10 +190,10 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
         for line in node_presets:
             preset = obj.ror_truck.node_presets.add()
             preset.args_line = line
-            
+
         # Lines
         for line in truckfile:
             tl = obj.ror_truck.truckfile_lines.add()
-            tl.line = line 
+            tl.line = line
 
         return {'FINISHED'}

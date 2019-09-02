@@ -101,15 +101,19 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
             bpy.ops.object.mode_set(mode=current_mode)
             bm.free()
 
-        truckfile = []
         indices = [0, 0, 0]
-        truck = bpy.context.active_object.ror_truck
+        truck = obj.ror_truck
         truckfile = []
         for entry in truck.truckfile_lines:
             truckfile.append(entry.line)
 
         with open(self.filepath, 'w') as f:
-            for line in truckfile[:truck.truckfile_nodes_pos]:
+            for line in truckfile[:truck.truckfile_name_pos]:
+                print (line, file=f)
+                
+            print(obj.name, file=f)
+        
+            for line in truckfile[truck.truckfile_name_pos:truck.truckfile_nodes_pos]:
                 print (line, file=f)
 
             print("nodes", file=f)

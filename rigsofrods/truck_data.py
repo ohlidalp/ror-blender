@@ -45,6 +45,7 @@ class RoR_Truck(bpy.types.PropertyGroup):
         cls.truckfile_nodes_pos = bpy.props.IntProperty(description='Truckfile line index of `nodes`')
         cls.truckfile_beams_pos = bpy.props.IntProperty(description='Truckfile line index of `beams`')
         cls.truckfile_cab_pos = bpy.props.IntProperty(description='Truckfile line index of `cab`')
+        cls.truckfile_name_pos = bpy.props.IntProperty(description='Truckfile line index of name')
 
         bpy.types.Object.ror_truck = bpy.props.PointerProperty(type=cls, name='Truck', description='Truck (Rigs of Rods)')
 
