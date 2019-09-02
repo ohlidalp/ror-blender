@@ -51,7 +51,7 @@ class RoR_Truck(bpy.types.PropertyGroup):
 
     @classmethod
     def unregister(cls):
-        del bpy.types.Object.rig_def
+        del bpy.types.Object.ror_truck
 
 
 class RoR_BeamPreset(bpy.types.PropertyGroup):
