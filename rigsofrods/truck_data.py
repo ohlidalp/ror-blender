@@ -28,7 +28,7 @@ import bpy
 
 
 class RoR_Truck(bpy.types.PropertyGroup):
-    """ A RoR softbody physics object, traditionally called 'truck' """ 
+    """ A RoR softbody physics object, traditionally called 'truck' """
 
     @classmethod
     def register(cls):
@@ -37,14 +37,14 @@ class RoR_Truck(bpy.types.PropertyGroup):
 
         cls.node_presets = bpy.props.CollectionProperty(type=RoR_NodePreset, name="Node presets", description="Truckfile: `set_node_defaults`")
         cls.active_node_preset_index = bpy.props.IntProperty()
-        
+
         cls.active_node_options = bpy.props.StringProperty(description='Working copy of node options')
-        
+
         cls.truckfile_path = bpy.props.StringProperty(description='Truckfile path')
         cls.truckfile_lines = bpy.props.CollectionProperty(type=RoR_TruckLine, description='Truckfile lines')
         cls.truckfile_nodes_pos = bpy.props.IntProperty(description='Truckfile line index of `nodes`')
         cls.truckfile_beams_pos = bpy.props.IntProperty(description='Truckfile line index of `beams`')
-        cls.truckfile_cab_pos = bpy.props.IntProperty(description='Truckfile line index of `cab`')
+        cls.truckfile_submesh_pos = bpy.props.IntProperty(description='Truckfile line index of `submesh`')
         cls.truckfile_name_pos = bpy.props.IntProperty(description='Truckfile line index of name')
 
         bpy.types.Object.ror_truck = bpy.props.PointerProperty(type=cls, name='Truck', description='Truck (Rigs of Rods)')
@@ -68,7 +68,7 @@ class RoR_NodePreset(bpy.types.PropertyGroup):
     @classmethod
     def register(cls):
         cls.args_line = bpy.props.StringProperty(name="Arguments", description="Text line with arguments")
-        
+
 class RoR_TruckLine(bpy.types.PropertyGroup):
     """ Just a string wrapper """
 

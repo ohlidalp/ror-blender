@@ -25,6 +25,20 @@ from bpy_extras.io_utils import ImportHelper
 def import_menu_func(self, context):
     self.layout.operator(ROR_OT_truck_import.bl_idname, text="Truck (.truck)")
 
+class ImportState:
+    submesh_idx = 0
+    buf_submesh_backmesh = False
+    buf_submesh_cabs = []
+    cabs = []
+    texcoords = {} # Node index -> (U, V) coordinates tuple
+
+    def flush_submesh(self):
+        for args in self.buf_submesh_cabs:
+            self.cabs.append(args + [self.buf_submesh_backmesh])
+
+        self.buf_submesh_cabs = []
+        self.buf_submesh_backmesh = False
+
 class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
     bl_idname = "import_truck.truck"
     bl_label = "Import RoR Truck"
@@ -42,13 +56,12 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
         nodes = []
         beam_idx = 0
         beams = []
-        cab_idx = 0
-        cabs = []
+        state = ImportState()
 
         with open(self.filepath, 'r') as f:
             node_defaults = ''
             beam_defaults = ''
-            mode = 'name' # 'name', 'nodes', 'beams', 'cab', 'ignore'
+            mode = 'name' # 'name', 'nodes', 'beams', 'submesh', 'texcoords', 'cab', 'ignore'
             groups = []
             truck_name = ''
             for line in f:
@@ -82,26 +95,38 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
                     mode = 'nodes'
                     node_defaults = ''
                     node_idx = len(truckfile)
+                    state.flush_submesh()
                     continue
                 elif args[0] == 'beams':
                     mode = 'beams'
                     beam_defaults = ''
                     beam_idx = len(truckfile)
+                    state.flush_submesh()
+                    continue
+                elif args[0] == 'submesh':
+                    mode = 'submesh'
+                    state.submesh_idx = len(truckfile)
+                    state.flush_submesh()
+                    continue
+                elif args[0] == 'texcoords':
+                    mode = 'texcoords'
                     continue
                 elif args[0] == 'cab':
                     mode = 'cab'
-                    cab_idx = len(truckfile)
                     continue
                 elif not args[0].isdigit() or mode == 'ignore':
                     truckfile.append(line)
                     mode = 'ignore'
+                    state.flush_submesh()
 
                 if mode == 'nodes':
                     nodes.append([node_defaults] + [groups] + args[1:])
                 elif mode == 'beams':
                     beams.append([beam_defaults] + args)
                 elif mode == 'cab':
-                    cabs.append(args)
+                    state.buf_submesh_cabs.append(args)
+                elif mode == 'texcoords':\
+                    state.texcoords[int(args[0])] = ( float(args[1]), float(args[2]) )
 
         mesh = bpy.data.meshes.new("softbody")
         obj  = bpy.data.objects.new(truck_name, mesh)
@@ -112,13 +137,13 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
 
         if (beam_idx < node_idx):
             beam_idx = len(truckfile)
-        if (cab_idx < beam_idx):
-            cab_idx = len(truckfile)
+        if (state.submesh_idx < beam_idx):
+            state.submesh_idx = len(truckfile)
 
         obj.ror_truck.truckfile_path = self.filepath
         obj.ror_truck.truckfile_nodes_pos = node_idx
         obj.ror_truck.truckfile_beams_pos = beam_idx
-        obj.ror_truck.truckfile_cab_pos = cab_idx
+        obj.ror_truck.truckfile_submesh_pos = state.submesh_idx
         obj.ror_truck.truckfile_name_pos = name_idx
 
         mesh = bpy.context.object.data
@@ -169,13 +194,26 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
                 print ("Failed to add edge:", b)
 
         options_key = bm.faces.layers.string.new("options")
-        for c in cabs:
+        backmesh_key = bm.faces.layers.int.new("backmesh") # Boolean 1/0
+        for c in state.cabs:
             try:
                 bm.faces.new((bm.verts[int(i)] for i in c[:3]))
                 bm.faces.ensure_lookup_table()
-                bm.faces[-1][options_key] = ' '.join(c[3:]).encode()
+                bm.faces[-1][options_key] = c[3].encode()
+                bm.faces[-1][backmesh_key] = int(c[4]) # Boolean 1/0
             except:
                 print ("Failed to add face:", c)
+
+        if len(state.texcoords):
+            uv_layer_key = bm.loops.layers.uv.new("[cabmesh texcoords]")
+            bm.verts.index_update() # Make sure all verts have valid `index`
+            for bf in bm.faces:
+                for bl in bf.loops:
+                    try:
+                        if int(bl.vert.index) in state.texcoords:
+                            bl[uv_layer_key].uv = state.texcoords[bl.vert.index]
+                    except:
+                        print ("Failed to set texcoord; face={}, loop={}, vert={}, vert.index={}".format(bf, bl, bl.vert, bl.vert.index))
 
         bm.to_mesh(mesh)
         bm.free()
