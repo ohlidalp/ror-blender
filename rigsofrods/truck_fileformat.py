@@ -22,13 +22,9 @@
     Author: Petr Ohlidal 2019
 """
 
-class Element:
-    line_idx = 0
-
-class Submesh(Element):
+class Submesh():
     def __init__(self, idx):
         self.line_idx = idx
-
-    backmesh = False
-    texcoords = {} # int -> (float, float)
-    cabs = []
+        self.backmesh = False
+        self.texcoords = {} # int -> (float, float)
+        self.cabs = []
