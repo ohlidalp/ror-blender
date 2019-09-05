@@ -194,17 +194,15 @@ class ROR_OT_truck_import(bpy.types.Operator, ImportHelper):
                     print ("Failed to add face:", c)
 
         for s in submeshes:
-            uv_name = "[submesh {}{}]".format(s.line_idx, " backmesh" if s.backmesh else "")
+            uv_name = "submesh {}{}".format(s.line_idx, " backmesh" if s.backmesh else "")
             uv_layer_key = bm.loops.layers.uv.new(uv_name)
-            print("----RoR import: created UV layer: " + uv_name)
             for bf in bm.faces:
                 for bl in bf.loops:
                     try:
                         if bl.vert.index in s.texcoords:
                             bl[uv_layer_key].uv = s.texcoords[bl.vert.index]
-                            print("----RoR import: vert {} setting texcoords {}".format(bl.vert.index, bl[uv_layer_key].uv))
                         else:
-                            bl[uv_layer_key].uv = (-1.0, -1.0) # Means 'not assigned'
+                            bl[uv_layer_key].uv = truck_fileformat.UNUSED_UV
                     except:
                         print ("Failed to set texcoord; face={}, loop={}, vert={}, vert.index={}".format(bf, bl, bl.vert, bl.vert.index))
 

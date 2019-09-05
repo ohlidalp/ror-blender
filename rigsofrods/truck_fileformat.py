@@ -22,6 +22,13 @@
     Author: Petr Ohlidal 2019
 """
 
+# Blender's UV layers always contain all vertices, but RoR's `texcoords` section explicitly lists used vertices.
+# To disambiguate when editing and exporting, the "unused" vertices are assigned with the following value:
+UNUSED_UV = (-1.0, -1.0)
+
+def uv_used(val):
+    return val[0] > UNUSED_UV[0] and val[1] >  UNUSED_UV[1]
+
 class Submesh():
     def __init__(self, idx):
         self.line_idx = idx

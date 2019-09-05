@@ -21,6 +21,7 @@
 import bpy
 import bmesh
 from bpy_extras.io_utils import ExportHelper
+from . import truck_fileformat
 
 def export_menu_func(self, context):
     self.layout.operator(ROR_OT_truck_export.bl_idname, text="Truck (.truck)")
@@ -38,7 +39,7 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
     def execute(self, context):
         nodes = []
         beams = []
-        cabs = []
+        submeshes = []
 
         for obj in context.selected_objects[:1]:
             if obj.type != 'MESH':
@@ -86,17 +87,52 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
                 groups = vg1 if vg1 == vg2 else [', '.join(vg1)] + [">"] + [', '.join(vg2)]
                 beams.append([ids, groups, format_string.format(e.vertices[0], e.vertices[1]), options, preset_idx])
 
-            format_string = '{:'+str(node_digits)+'d}, {:'+str(node_digits)+'d}, {:'+str(node_digits)+'d}'
+            # Truckfile section 'submesh'
+            # faces with UVs defined (see `truck_fileformat.INVALID_UV`) are assigned to respective submeshes
+            # faces without UVs (if present) are put in dedicated submesh at the end
             options_key = bm.faces.layers.string.get("options")
+            claimed_key = bm.faces.layers.int.new("claimed")
             bm.faces.ensure_lookup_table()
-            for p, bp in zip(obj.data.polygons, bm.faces):
-                if len(p.vertices) == 3:
+            bm.verts.index_update()
+            for uv_name, uv_key in bm.loops.layers.uv.items():
+                print("DBG export: processing uv layer {} -> {}".format(uv_name, uv_key))
+                name_tok = uv_name.split(' ')
+                if name_tok and 'submesh' in name_tok[0]:
+                    submesh = truck_fileformat.Submesh(0)
+                    submesh.line_idx = int(name_tok[1]) if len(name_tok) > 1 else 0
+                    submesh.backmesh = 'backmesh' in name_tok[2] if len(name_tok) > 2 else False
+                    print("> DBG export: created submesh, line:{}, backmesh:{}".format(submesh.line_idx, submesh.backmesh))
+                    for bf in bm.faces:
+                        if (
+                                len(bf.verts) == 3 and
+                                truck_fileformat.uv_used(bf.loops[0][uv_key].uv) and
+                                truck_fileformat.uv_used(bf.loops[1][uv_key].uv) and
+                                truck_fileformat.uv_used(bf.loops[2][uv_key].uv)
+                            ):
+                            bf[claimed_key] = 1
+                            print("> > DBG export: face {} claimed by uv-layer {}".format([bf.verts[0].index, bf.verts[1].index, bf.verts[2].index], uv_key))
+                            for i in range(0, 2):
+                                submesh.texcoords[bf.verts[i].index] = bf.loops[i][uv_key].uv
+                            options = ''
+                            if options_key:
+                                options = bf[options_key].decode()
+                            if not options:
+                                options = 'c'
+                            submesh.cabs.append([bf.verts[0].index, bf.verts[1].index, bf.verts[2].index, options])
+                    submeshes.append(submesh)
+                    print("> DBG export: added submesh with {} texcoords and {} cabs".format(len(submesh.texcoords), len(submesh.cabs)))
+
+            submesh_no_uv = truck_fileformat.Submesh(0)
+            for bf in bm.faces:
+                if bf[claimed_key] == 0:
                     options = ''
                     if options_key:
-                        options = bp[options_key].decode()
+                        options = bf[options_key].decode()
                     if not options:
                         options = 'c'
-                    cabs.append([format_string.format(p.vertices[0], p.vertices[1], p.vertices[2]), options])
+                    submesh_no_uv.cabs.append([bf.verts[0].index, bf.verts[1].index, bf.verts[2].index, options])
+            if submesh_no_uv.cabs:
+                submeshes.append(submesh_no_uv)
 
             bpy.ops.object.mode_set(mode=current_mode)
             bm.free()
@@ -110,9 +146,9 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
         with open(self.filepath, 'w') as f:
             for line in truckfile[:truck.truckfile_name_pos]:
                 print (line, file=f)
-                
+
             print(obj.name, file=f)
-        
+
             for line in truckfile[truck.truckfile_name_pos:truck.truckfile_nodes_pos]:
                 print (line, file=f)
 
@@ -152,18 +188,33 @@ class ROR_OT_truck_export(bpy.types.Operator, ExportHelper):
                     print (";grp:", *edge_groups, file=f)
                 print (*b[2:-1], sep=', ', file=f)
 
-            lines = truckfile[truck.truckfile_beams_pos:truck.truckfile_cab_pos]
-            if not lines:
-                lines = ['']
-            for line in lines:
-                print (line, file=f)
+            cab_format_string = '{:'+str(node_digits)+'d}, {:'+str(node_digits)+'d}, {:'+str(node_digits)+'d}'
+            uv_format_string = '{:'+str(node_digits)+'d}, {}, {}'
+            prev_line_idx = truck.truckfile_beams_pos
+            for s in submeshes:
+                print("DBG write: submesh with {} texcoords and {} cabs".format(len(s.texcoords), len(s.cabs)))
+                # Scroll down to position
+                lines = truckfile[prev_line_idx:s.line_idx]
+                print("> DBG write: printing {} lines, range: [{} : {}]".format(len(lines), prev_line_idx, s.line_idx))
+                if not lines:
+                    lines = ['']
+                for line in lines:
+                    print (line, file=f)
+                prev_line_idx = s.line_idx
+                # Print data
+                print("submesh", file=f)
+                if s.backmesh:
+                    print("backmesh", file=f)
+                if s.texcoords:
+                    print("texcoords", file=f)
+                    for t_node, t_uv in s.texcoords.items():
+                        print(uv_format_string.format(t_node, t_uv[0], t_uv[1]), file=f)
+                print("cab", file=f)
+                for c in s.cabs:
+                    nodes_str = cab_format_string.format(c[0], c[1], c[2])
+                    print(*[nodes_str, c[3]], sep=', ', file=f)
 
-            if cabs:
-                print ("cab", file=f)
-                for c in cabs:
-                    print (*c, sep=', ', file=f)
-
-            for line in truckfile[truck.truckfile_cab_pos:]:
+            for line in truckfile[truck.truckfile_submesh_pos:]:
                 print (line, file=f)
 
         return {'FINISHED'}
